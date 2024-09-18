@@ -24,4 +24,15 @@ pip freeze > requirements.txt
 
 pip install -r requirements.txt
 
+# para ejecutar la app
+
+python -m src.main
+
+# libreria para generar los .exe
+
+pip install pyinstaller
+
+# para generar el ejecutable
+
+pyinstaller --onefile --windowed src/main.py
 
