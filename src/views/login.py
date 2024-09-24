@@ -1,19 +1,15 @@
 import flet as ft
 
 def login_view(page: ft.Page):
-    page.title = 'Login'
+    page.title = 'Binaq - Inicio de Sesión'
     page.icon = 'icons.CONNECTED_TV'
     page.window_width = 600
     page.window_height = 485
     page.window_resizable = False
     page.window_maximizable = False
     page.bgcolor = '#000000'
-
+    page.window.icon = './images/b_logo.png'
     page.window_center()
-
-    
-
-    
 
     # Crear la imagen de fondo con opacidad
     background_image = ft.Image(
@@ -28,8 +24,9 @@ def login_view(page: ft.Page):
         hint_text='Nombre de usuario',
         width=250,
         bgcolor="#FFFFFF",  # Fondo blanco y opaco
-        border_color="#CCCCCC",  # Color del borde
+        border_color="#000000",  # Color del borde
         color="#000000",  # Color del texto
+        opacity=0.9  # Ajusta este valor para cambiar la transparencia (0.0 a 1.0)
         
     )
     
@@ -38,8 +35,9 @@ def login_view(page: ft.Page):
         password=True,
         width=250,
         bgcolor="#FFFFFF",  # Fondo blanco y opaco
-        border_color="#CCCCCC",  # Color del borde
-        color="#000000"  # Color del texto
+        border_color="#000000",  # Color del borde
+        color="#000000",  # Color del texto
+        opacity=0.9  # Ajusta este valor para cambiar la transparencia (0.0 a 1.0)
     )
 
     # Crear un botón personalizado
@@ -88,29 +86,42 @@ def login_view(page: ft.Page):
                 ],
                 alignment=ft.alignment.center,  # Alinear todo el contenido del Stack al centro
             ),
-
         )
-        
     )
 
-    def on_login(username_tf, password_tf):
-        username = username_tf.value
-        password = password_tf.value
-        print('Iniciar sesión')
-        print(f'Usuario: {username}')
-        print(f'Contraseña: {password}')
+    page.update()
 
-        if (username == '' or password == ''):
+    def show_error_dialog():
+        alert_dialog = ft.AlertDialog(
+            title=ft.Text("Error"),
+            content=ft.Text("Usuario o contraseña incorrectos"),
+            actions=[
+                ft.TextButton("Aceptar", on_click=lambda e: close_dialog())
+            ],
+        )
+        page.dialog = alert_dialog
+        alert_dialog.open = True
+        page.update()
+
+    def close_dialog():
+        page.dialog.open = False  # Cerrar el diálogo
+        page.update()
+
+
+    def on_login(username_tf, password_tf):
+
+        if (username_tf.value == '' or password_tf.value == ''):
             print('Por favor, complete todos los campos')
             return
-        
-        elif (username == 'admin' and password == 'password'):
-            print('Inicio de sesión exitoso')
-            # redirige a la página de inicio
+
+        elif (username_tf.value == '1' and password_tf.value == '1'):
             page.go("/home")
+
         else:
-            print('Usuario o contraseña incorrectos')
+            show_error_dialog()
             return
+        
+
 
 
 
