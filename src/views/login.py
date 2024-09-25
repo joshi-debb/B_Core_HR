@@ -3,13 +3,13 @@ import flet as ft
 def login_view(page: ft.Page):
     page.title = 'Binaq - Inicio de Sesión'
     page.icon = 'icons.CONNECTED_TV'
-    page.window_width = 600
-    page.window_height = 485
-    page.window_resizable = False
-    page.window_maximizable = False
+    page.window.width = 600
+    page.window.height = 485
+    page.window.resizable = False
+    page.window.maximizable = False
     page.bgcolor = '#000000'
     page.window.icon = './images/b_logo.png'
-    page.window_center()
+    page.window.center()
 
     # Crear la imagen de fondo con opacidad
     background_image = ft.Image(

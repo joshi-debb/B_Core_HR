@@ -18,6 +18,6 @@ def main(page: ft.Page):
 
     # Definir la ruta por defecto al iniciar la aplicación
     page.on_route_change = route_change
-    page.go("/login")  # Iniciar en la página de login
+    page.go("/home")  # Iniciar en la página de login
 
 ft.app(target=main)
