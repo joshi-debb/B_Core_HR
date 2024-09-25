@@ -6,9 +6,10 @@ def home_view(page: ft.Page):
     page.window.height = 800
     page.window.resizable = False
     page.window.maximizable = False
+    # page.window.maximized = True
     page.bgcolor = '#000000'
     page.window.icon = './images/b_logo.png'
-
+    page.theme_mode = ft.ThemeMode.LIGHT
     page.window.center()
 
     # Crear la imagen de fondo con opacidad
@@ -20,7 +21,7 @@ def home_view(page: ft.Page):
     )
 
     tittle = ft.Text(
-        'Bonatti Ingenieros y Arquitectos S.A. - Binarq',
+        'Departamento de Recursos Humanos - Binarq',
         color='#000000',
         size=42,
         weight=ft.FontWeight.W_900,
@@ -30,6 +31,60 @@ def home_view(page: ft.Page):
         src='./images/b_logo.png',
         width= 80,
         fit=ft.ImageFit.CONTAIN        
+    )
+
+    # Crear un botón personalizado
+    logout_button = ft.ElevatedButton(
+        'Iniciar Sesión',
+        on_click=lambda e: on_logout(),
+        bgcolor="#227B94",  # Color de fondo personalizado (azul)
+        color="#FFFFFF",  # Color del texto (blanco)
+        style=ft.ButtonStyle(
+            shape=ft.RoundedRectangleBorder(radius=10),  # Bordes redondeados
+            padding=ft.padding.all(12),  # Espaciado interno
+            elevation=5,  # Sombra del botón
+        ),
+        width=150,  # Ancho del botón
+        height=40,  # Alto del botón
+    )
+
+    profile_card = ft.Container(
+        content=ft.Column(
+            controls=[                    
+                    ft.Container(
+                        content=ft.Image(
+                            src='./images/default_p.png',
+                            width= 150,
+                            fit=ft.ImageFit.CONTAIN        
+                        ),
+                        padding=ft.padding.all(10)
+                    ),
+                    ft.Container(
+                        content=ft.Text(
+                            'Nombre: Juan Perez',
+                            color='#000000',
+                            size=14,
+                            weight=ft.FontWeight.W_900,
+                        ),
+                        padding=ft.padding.all(10)
+                    ),
+                    ft.Container(
+                        content=ft.Text(
+                            'Cargo: Gerente de Recursos Humanos',
+                            color='#000000',
+                            size=14,
+                            weight=ft.FontWeight.W_900,
+                        ),
+                        padding=ft.padding.all(10)
+                    ),
+            ],
+        ),
+        width=200,
+        height=400,
+        bgcolor='#85FFFFFF',
+        border=ft.border.all(1, "#000000"),
+        border_radius=10,
+        padding=ft.padding.all(10)
     )
 
     header = ft.Container(
@@ -62,10 +117,16 @@ def home_view(page: ft.Page):
 
     def handle_navigation_change(e):
         if e.control.selected_index == 0:
-            print('First')
+            print('Ver todos')
         elif e.control.selected_index == 1:
-            print('Second')
+            print('Agregar')
         elif e.control.selected_index == 2:
+            print('Editar')
+        elif e.control.selected_index == 3:
+            print('Eliminar')
+        elif e.control.selected_index == 4:
+            print('Settings')
+        elif e.control.selected_index == 5:
             print('Settings')
     
     # Crear el NavigationRail
@@ -118,7 +179,8 @@ def home_view(page: ft.Page):
                                     width=150
                                 ),
                                 ft.Container(
-                                    content= ft.Text('body', color='#000000', size=20),
+                                    content= profile_card,
+                                    
                                 )
                             ]
                         )
@@ -159,6 +221,10 @@ def home_view(page: ft.Page):
         ),
         
     )
+
+
+    def on_logout():
+        page.go('/login')
 
 
 

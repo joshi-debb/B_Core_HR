@@ -9,6 +9,7 @@ def login_view(page: ft.Page):
     page.window.maximizable = False
     page.bgcolor = '#000000'
     page.window.icon = './images/b_logo.png'
+    page.theme_mode = ft.ThemeMode.LIGHT
     page.window.center()
 
     # Crear la imagen de fondo con opacidad
@@ -29,7 +30,7 @@ def login_view(page: ft.Page):
         opacity=0.9  # Ajusta este valor para cambiar la transparencia (0.0 a 1.0)
         
     )
-    
+
     password_tf = ft.TextField(
         hint_text='Contraseña',
         password=True,
