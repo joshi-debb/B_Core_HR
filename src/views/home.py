@@ -6,7 +6,6 @@ def home_view(page: ft.Page):
     page.window.height = 800
     page.window.resizable = False
     page.window.maximizable = False
-    # page.window.maximized = True
     page.bgcolor = '#000000'
     page.window.icon = './images/b_logo.png'
     page.theme_mode = ft.ThemeMode.LIGHT
@@ -29,39 +28,30 @@ def home_view(page: ft.Page):
 
     image = ft.Image(
         src='./images/b_logo.png',
-        width= 80,
+        width=80,
         fit=ft.ImageFit.CONTAIN        
     )
 
-    # Crear un botón personalizado
-    logout_button = ft.ElevatedButton(
-        'Iniciar Sesión',
-        on_click=lambda e: on_logout(),
-        bgcolor="#227B94",  # Color de fondo personalizado (azul)
-        color="#FFFFFF",  # Color del texto (blanco)
-        style=ft.ButtonStyle(
-            shape=ft.RoundedRectangleBorder(radius=10),  # Bordes redondeados
-            padding=ft.padding.all(12),  # Espaciado interno
-            elevation=5,  # Sombra del botón
-        ),
-        width=150,  # Ancho del botón
-        height=40,  # Alto del botón
-    )
+    # Lista simulada de empleados
+    empleados = [
+        {"nombre": f"Empleado {i+1}", "cargo": "Cargo de prueba", "foto": './images/default_p.png'} for i in range(6)
+    ]
 
-    profile_card = ft.Container(
-        content=ft.Column(
-            controls=[                    
+    def crear_profile_card(empleado):
+        return ft.Container(
+            content=ft.Column(
+                controls=[
                     ft.Container(
                         content=ft.Image(
-                            src='./images/default_p.png',
-                            width= 150,
+                            src=empleado["foto"],  # Usar la foto del empleado
+                            width=150,
                             fit=ft.ImageFit.CONTAIN        
                         ),
                         padding=ft.padding.all(10)
                     ),
                     ft.Container(
                         content=ft.Text(
-                            'Nombre: Juan Perez',
+                            f'Nombre: {empleado["nombre"]}',
                             color='#000000',
                             size=14,
                             weight=ft.FontWeight.W_900,
@@ -70,20 +60,35 @@ def home_view(page: ft.Page):
                     ),
                     ft.Container(
                         content=ft.Text(
-                            'Cargo: Gerente de Recursos Humanos',
+                            f'Cargo: {empleado["cargo"]}',
                             color='#000000',
                             size=14,
                             weight=ft.FontWeight.W_900,
                         ),
                         padding=ft.padding.all(10)
                     ),
-            ],
-        ),
-        width=200,
-        height=400,
-        bgcolor='#85FFFFFF',
-        border=ft.border.all(1, "#000000"),
-        border_radius=10,
+                ],
+            ),
+            width=200,
+            height=400,
+            bgcolor='#85FFFFFF',
+            border=ft.border.all(1, "#000000"),
+            border_radius=10,
+            padding=ft.padding.all(10)
+        )
+
+    # Crear la lista de tarjetas de perfil
+    profile_cards = [crear_profile_card(empleado) for empleado in empleados]
+
+    # Crear un GridView para organizar las tarjetas en forma de matriz
+    grid_view = ft.GridView(
+        controls=profile_cards,
+        runs_count=5,
+        max_extent=200,
+        child_aspect_ratio=0.5,
+        spacing=10,
+        run_spacing=10,
+        expand=True,
         padding=ft.padding.all(10)
     )
 
@@ -109,27 +114,94 @@ def home_view(page: ft.Page):
         ),
         padding=ft.padding.all(10),
         height=80,
-        # border=ft.border.all(1, "#000000"),
-        # border_radius=10,
         bgcolor='#85FFFFFF'
     )
 
+    # Crear el control de la imagen para previsualización
+    preview_image = ft.Image(src='./images/default_p.png', width=150, height=150, fit=ft.ImageFit.COVER)
+    #preview_image = ft.Image(width=150, height=150, fit=ft.ImageFit.COVER)
+
+    # Crear el FilePicker y añadirlo a la página
+    file_picker = ft.FilePicker(
+        
+        on_result=lambda e: (
+            setattr(preview_image, 'src', e.files[0].path) if e.files else None,
+            page.update()  # Asegurarse de que la página se actualice después de cambiar la imagen
+        )
+    )
+
+    # # Agregar el FilePicker a la página (no visible)
+    # page.add(file_picker)
+
+    # Función para cerrar el diálogo
+    def cerrar_dialogo(dialog):
+        preview_image.src = './images/default_p.png' 
+        dialog.open = False
+        page.update()
+
+    # Función para agregar un empleado
+    def agregar_empleado(dialog):
+        # Obtener el nombre y cargo del diálogo
+        nombre = dialog.content.controls[0].value
+        cargo = dialog.content.controls[1].value
+        # Lógica para guardar el empleado
+        empleados.append({"nombre": nombre, "cargo": cargo, "foto": preview_image.src})  # Usar la imagen de previsualización
+        actualizar_tarjetas()  # Actualizar tarjetas después de agregar
+        preview_image.src = './images/default_p.png' 
+        dialog.open = False
+        page.update()
+
+    # Función para mostrar el diálogo de agregar empleado
+    def mostrar_dialogo_agregar():
+        dialog = ft.AlertDialog(
+            title=ft.Text("Agregar Empleado"),
+            content=ft.Column(
+                controls=[
+                    ft.TextField(label="Nombre"),
+                    ft.TextField(label="Cargo"),
+                    ft.Column(
+                        controls=[
+                            ft.Text("Selecciona una foto:"),
+                            ft.Row(
+                                controls=[
+                                    ft.ElevatedButton("Cargar Foto", on_click=lambda e: file_picker.pick_files()),  # Muestra el diálogo de archivos
+                                    preview_image,  # Control de imagen para previsualización
+                                ],
+                            )
+                        ]
+                    )
+                ]
+            ),
+            actions=[
+                ft.TextButton("Agregar", on_click=lambda e: agregar_empleado(dialog)),
+                ft.TextButton("Cancelar", on_click=lambda e: cerrar_dialogo(dialog)),
+            ],
+        )
+
+        # Conectar el diálogo a la página y abrirlo
+        page.dialog = dialog
+        dialog.open = True
+        page.update()
+
+    def actualizar_tarjetas():
+        # Actualizar las tarjetas de perfil
+        profile_cards.clear()
+        profile_cards.extend(crear_profile_card(empleado) for empleado in empleados)
+        grid_view.controls = profile_cards
+        page.update()
 
     def handle_navigation_change(e):
         if e.control.selected_index == 0:
             print('Ver todos')
         elif e.control.selected_index == 1:
-            print('Agregar')
+            mostrar_dialogo_agregar()  # Abre el diálogo para agregar
         elif e.control.selected_index == 2:
             print('Editar')
         elif e.control.selected_index == 3:
             print('Eliminar')
         elif e.control.selected_index == 4:
             print('Settings')
-        elif e.control.selected_index == 5:
-            print('Settings')
-    
-    # Crear el NavigationRail
+
     rail = ft.NavigationRail(
         selected_index=0,
         label_type=ft.NavigationRailLabelType.ALL,
@@ -165,38 +237,22 @@ def home_view(page: ft.Page):
         on_change=lambda e: handle_navigation_change(e),
     )
 
-    
-
     body = ft.Container(
         content=ft.Row(
             controls=[
-                ft.Stack(
-                    controls=[
-                        ft.Row(
-                            controls=[
-                                ft.Container(
-                                    content=rail,
-                                    width=150
-                                ),
-                                ft.Container(
-                                    content= profile_card,
-                                    
-                                )
-                            ]
-                        )
-                    ]
+                ft.Container(
+                    content=rail,
+                    width=150,
+                ),
+                ft.Container(
+                    content=grid_view,
+                    expand=True
                 )
-            ],
-            alignment=ft.MainAxisAlignment.START
+            ]
         ),
         bgcolor='#50FADFA1',
         height=635,
-        # padding=ft.padding.all(10),
-        # border=ft.border.all(1, "#000000"),
-        # border_radius=10,
     )
-
-    
 
     page.add(
         ft.Container(
@@ -207,27 +263,14 @@ def home_view(page: ft.Page):
                     ),
                     ft.Container(
                         ft.Column(
-                            controls=[
-                                header,
-                                body
-                            ],
+                            controls=[header, body, file_picker],
                         ),
                         padding=ft.padding.all(10)
                     )
-                    
                 ],
-                # alignment=ft.alignment.center, 
             ),
         ),
-        
     )
-
 
     def on_logout():
         page.go('/login')
-
-
-
-    
-
-

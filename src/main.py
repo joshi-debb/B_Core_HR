@@ -1,5 +1,8 @@
 import flet as ft
 from views import login, home
+from services import db
+
+db.test_connection()
 
 def main(page: ft.Page):
     # Define las rutas
