@@ -1,10 +1,16 @@
 import flet as ft
 
+import datetime
+
+
+from services import db
+
 def home_view(page: ft.Page):
     page.title = 'Binaq - Inicio'
-    page.window.width = 1150
+    page.window.width = 1200
     page.window.height = 800
     page.window.resizable = False
+    # page.window.maximized = True
     page.window.maximizable = False
     page.bgcolor = '#000000'
     page.window.icon = './images/b_logo.png'
@@ -15,7 +21,7 @@ def home_view(page: ft.Page):
     background_image = ft.Image(
         src='./images/bg_home.png',
         fit=ft.ImageFit.COVER,
-        width=1200,
+        height=740,
         opacity=0.8 
     )
 
@@ -32,10 +38,59 @@ def home_view(page: ft.Page):
         fit=ft.ImageFit.CONTAIN        
     )
 
+    # Crear el control de la imagen para previsualización
+    preview_image = ft.Image(src='./images/default_p.png', width=113, height=150, fit=ft.ImageFit.COVER)
+    #preview_image = ft.Image(width=150, height=150, fit=ft.ImageFit.COVER)
+
+    # Crear el FilePicker y añadirlo a la página
+    file_picker = ft.FilePicker(
+        
+        on_result=lambda e: (
+            setattr(preview_image, 'src', e.files[0].path) if e.files else None,
+            page.update()  # Asegurarse de que la página se actualice después de cambiar la imagen
+        )
+    )
+
+    edit_button = ft.ElevatedButton(
+        content=ft.Container(
+            content=ft.Row(
+                controls=[
+                    ft.Icon(name=ft.icons.EDIT, color=ft.colors.WHITE),  # Ícono con color personalizado
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,  # Alineación centrada del ícono
+            ),
+            alignment=ft.alignment.center,  # Alineación centrada en el contenedor
+            width=15,  # Cambiar el ancho del contenedor
+            height=30,  # Cambiar la altura del contenedor
+        ),
+        style=ft.ButtonStyle(
+            bgcolor=ft.colors.BLUE,  # Cambiar el color de fondo del botón
+            shape=ft.RoundedRectangleBorder(radius=8),  # Bordes redondeados (opcional)
+        ),
+        on_click=lambda e: print("Botón de editar presionado")  # Acción al hacer clic
+    )
+
+
+
+
+
+    delete_button = ft.ElevatedButton(
+        content=ft.Row(
+            controls=[
+                ft.Icon(name=ft.icons.DELETE, color=ft.colors.WHITE),  # Ícono con color personalizado
+            ],
+            alignment=ft.MainAxisAlignment.CENTER  # Alineación centrada del ícono
+        ),
+        style=ft.ButtonStyle(
+            bgcolor=ft.colors.RED,  # Cambiar el color de fondo del botón
+            shape=ft.RoundedRectangleBorder(radius=8),  # Bordes redondeados (opcional)
+        ),
+        on_click=lambda e: print("Botón de editar presionado")  # Acción al hacer clic
+    )
+
+
     # Lista simulada de empleados
-    empleados = [
-        {"nombre": f"Empleado {i+1}", "cargo": "Cargo de prueba", "foto": './images/default_p.png'} for i in range(6)
-    ]
+    empleados = db.get_empleados()
 
     def crear_profile_card(empleado):
         return ft.Container(
@@ -43,7 +98,7 @@ def home_view(page: ft.Page):
                 controls=[
                     ft.Container(
                         content=ft.Image(
-                            src=empleado["foto"],  # Usar la foto del empleado
+                            src=preview_image.src,  # Usar la foto del empleado
                             width=150,
                             fit=ft.ImageFit.CONTAIN        
                         ),
@@ -51,7 +106,7 @@ def home_view(page: ft.Page):
                     ),
                     ft.Container(
                         content=ft.Text(
-                            f'Nombre: {empleado["nombre"]}',
+                            f'{empleado["firstName"]}',
                             color='#000000',
                             size=14,
                             weight=ft.FontWeight.W_900,
@@ -60,12 +115,21 @@ def home_view(page: ft.Page):
                     ),
                     ft.Container(
                         content=ft.Text(
-                            f'Cargo: {empleado["cargo"]}',
+                            f'{empleado["lastName"]}',
                             color='#000000',
                             size=14,
                             weight=ft.FontWeight.W_900,
                         ),
-                        padding=ft.padding.all(10)
+                        # padding=ft.padding.all(10)
+                    ),
+                    ft.Container(
+                        content=ft.Row(
+                            controls=[
+                                edit_button, delete_button
+                            ],
+                            alignment=ft.MainAxisAlignment.START
+                        ),
+                        # padding=ft.padding.all(10)
                     ),
                 ],
             ),
@@ -117,21 +181,7 @@ def home_view(page: ft.Page):
         bgcolor='#85FFFFFF'
     )
 
-    # Crear el control de la imagen para previsualización
-    preview_image = ft.Image(src='./images/default_p.png', width=150, height=150, fit=ft.ImageFit.COVER)
-    #preview_image = ft.Image(width=150, height=150, fit=ft.ImageFit.COVER)
-
-    # Crear el FilePicker y añadirlo a la página
-    file_picker = ft.FilePicker(
-        
-        on_result=lambda e: (
-            setattr(preview_image, 'src', e.files[0].path) if e.files else None,
-            page.update()  # Asegurarse de que la página se actualice después de cambiar la imagen
-        )
-    )
-
-    # # Agregar el FilePicker a la página (no visible)
-    # page.add(file_picker)
+    
 
     # Función para cerrar el diálogo
     def cerrar_dialogo(dialog):
@@ -140,40 +190,335 @@ def home_view(page: ft.Page):
         page.update()
 
     # Función para agregar un empleado
-    def agregar_empleado(dialog):
-        # Obtener el nombre y cargo del diálogo
+    def agregar_empleado(dialog, genero_dropdown):
+        # Obtener los valores de los campos y del dropdown de género
         nombre = dialog.content.controls[0].value
-        cargo = dialog.content.controls[1].value
-        # Lógica para guardar el empleado
-        empleados.append({"nombre": nombre, "cargo": cargo, "foto": preview_image.src})  # Usar la imagen de previsualización
-        actualizar_tarjetas()  # Actualizar tarjetas después de agregar
-        preview_image.src = './images/default_p.png' 
+        apellido = dialog.content.controls[1].value
+        dpi = dialog.content.controls[2].value
+        nit = dialog.content.controls[3].value
+        telefono = dialog.content.controls[4].value
+        correo = dialog.content.controls[5].value
+        edad = int(dialog.content.controls[6].value)
+        genero = genero_dropdown.value 
+
+        print(nombre, apellido, dpi, nit, telefono, correo, edad, genero)
+
+        # Insertar los datos en la base de datos
+        db.insert_personal_data(nombre, apellido, dpi, nit, telefono, correo, edad, genero)
+
+        actualizar_tarjetas()  # Actualizar las tarjetas después de agregar
+        preview_image.src = './images/default_p.png'
         dialog.open = False
         page.update()
 
-    # Función para mostrar el diálogo de agregar empleado
     def mostrar_dialogo_agregar():
+        # Crear el dropdown para el género
+        genero_dropdown = ft.Dropdown(
+            label="Género", 
+            options=[
+                ft.dropdown.Option("male", "Masculino"),
+                ft.dropdown.Option("female", "Femenino"),
+                ft.dropdown.Option("other", "Otro"),
+            ],
+            width=200,
+            value="male"  # Género predeterminado
+        )
+        
+        estado_civil_dropdown = ft.Dropdown(
+            label="Estado Civil", 
+            options=[
+                ft.dropdown.Option("single", "Soltero"),
+                ft.dropdown.Option("married", "Casado"),
+                ft.dropdown.Option("divorced", "Divorciado"),
+                ft.dropdown.Option("widowed", "Viudo"),
+            ],
+            width=200,
+            value="single"  # Género predeterminado
+        )
+
+        # DatePicker configuración
+        datepicker = ft.DatePicker(
+            first_date=datetime.datetime(1960, 1, 1),
+            last_date=datetime.datetime(2030, 12, 31),
+            on_change=lambda e: update_birthday_label(e, page)
+        )
+
+        selected_date_label = ft.Text("Cumpleaños no seleccionado", height=5)
+
+        
+
+        def open_date_picker(e):
+            # Asegurarse de que el DatePicker está en la página antes de abrirlo
+            if datepicker not in page.overlay:
+                page.overlay.append(datepicker)
+                page.update()  # Asegurarse de que el control está actualizado
+            datepicker.pick_date()  # Abre el DatePicker
+
+        def update_birthday_label(e, page):
+            print(datepicker.value.strftime("%d/%m/%Y"))
+            selected_date_label.value = datepicker.value.strftime("%d/%m/%Y")
+            page.update()
+
+        
+        calendar_button = ft.ElevatedButton(
+            "Fecha Cumpleaños",
+            icon=ft.icons.CALENDAR_MONTH,  # Cambia el ícono según tu preferencia
+            style=ft.ButtonStyle(
+                bgcolor=ft.colors.GREEN,  # Cambia el color de fondo del botón
+                color=ft.colors.WHITE,     # Cambia el color del texto
+                shape=ft.RoundedRectangleBorder(radius=8),  # Bordes redondeados
+            ),
+            width=200,  # Ancho del botón
+            height=40,  # Alto del botón
+            on_click=open_date_picker
+        )
+
+        fecha_inicio_button = ft.ElevatedButton(
+            "Fecha Inicia",
+            icon=ft.icons.CALENDAR_MONTH,  # Cambia el ícono según tu preferencia
+            style=ft.ButtonStyle(
+                bgcolor=ft.colors.GREEN,  # Cambia el color de fondo del botón
+                color=ft.colors.WHITE,     # Cambia el color del texto
+                shape=ft.RoundedRectangleBorder(radius=8),  # Bordes redondeados
+            ),
+            width=200,  # Ancho del botón
+            height=40,  # Alto del botón
+            on_click=open_date_picker
+        )
+
+        fecha_final_button = ft.ElevatedButton(
+            "Fecha Finaliza",
+            icon=ft.icons.CALENDAR_MONTH,  # Cambia el ícono según tu preferencia
+            style=ft.ButtonStyle(
+                bgcolor=ft.colors.GREEN,  # Cambia el color de fondo del botón
+                color=ft.colors.WHITE,     # Cambia el color del texto
+                shape=ft.RoundedRectangleBorder(radius=8),  # Bordes redondeados
+            ),
+            width=200,  # Ancho del botón
+            height=40,  # Alto del botón
+            on_click=open_date_picker
+        )
+
+        # Crear el diálogo con varias columnas
         dialog = ft.AlertDialog(
             title=ft.Text("Agregar Empleado"),
-            content=ft.Column(
-                controls=[
-                    ft.TextField(label="Nombre"),
-                    ft.TextField(label="Cargo"),
-                    ft.Column(
-                        controls=[
-                            ft.Text("Selecciona una foto:"),
-                            ft.Row(
+            content=ft.Container(
+                content=ft.Column(
+                    controls=[
+                        ft.Container(
+                            content=ft.Row(  # Usa ListView para permitir el desplazamiento
                                 controls=[
-                                    ft.ElevatedButton("Cargar Foto", on_click=lambda e: file_picker.pick_files()),  # Muestra el diálogo de archivos
-                                    preview_image,  # Control de imagen para previsualización
+                                    ft.Container(
+                                        content=ft.Column(
+                                            controls=[
+                                                ft.Text("Información Personal"),
+                                                ft.Row(
+                                                    controls=[
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                controls=[
+                                                                    ft.Column(
+                                                                        controls=[
+                                                                            preview_image,
+                                                                            ft.Text("Selecciona una foto:"),
+                                                                            ft.ElevatedButton("Cargar Foto", on_click=lambda e: file_picker.pick_files()),
+                                                                            
+                                                                        ],
+                                                                        
+                                                                        
+                                                                    ),
+                                                                ],
+                                                                #alienar horizontalmente al centro
+                                                                horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                                                                
+                                                            ),
+                                                            width=200
+
+                                                        ),
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                controls=[
+                                                                    ft.TextField(label="Nombres", width=200),
+                                                                    ft.TextField(label="Apellidos", width=200),
+                                                                    ft.TextField(label="DPI/Pasaporte", width=200),
+                                                                    ft.TextField(label="NIT", width=200),
+                                                                ]
+                                                            )
+                                                            
+                                                        ),
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                controls=[
+                                                                    ft.TextField(label="Teléfono", width=200),
+                                                                    ft.TextField(label="Correo", width=200),
+                                                                    ft.TextField(label="Edad", width=200),
+                                                                    genero_dropdown,
+                                                                ]
+                                                            )
+                                                            
+                                                        ),
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                controls=[
+                                                                    ft.TextField(label="DPI/Pasaporte", width=200),
+                                                                    ft.TextField(label="NIT", width=200),
+                                                                    ft.TextField(label="Teléfono", width=200),
+                                                                    ft.TextField(label="Correo", width=200),
+                                                                ]
+                                                            )
+                                                            
+                                                        ),
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                controls=[
+                                                                    ft.TextField(label="Edad", width=200),
+                                                                    ft.Container(
+                                                                        content=calendar_button,
+                                                                        padding=ft.padding.only(top=3),
+                                                                    ),
+                                                                    ft.Container(
+                                                                        content=estado_civil_dropdown,
+                                                                        padding=ft.padding.only(top=5),
+                                                                    ),
+                                                                    genero_dropdown,
+                                                                ]
+                                                            )
+                                                            
+                                                        )
+                                                    ],
+                                                    expand=True
+                                                ),
+
+                                            ]
+                                        )
+                                        
+
+                                    ),
+                                    
                                 ],
-                            )
-                        ]
-                    )
-                ]
+                                expand=True,  # Permite que el ListView ocupe todo el espacio
+                            ),
+                        ),
+                        ft.Container(
+                            content=ft.Row(  # Usa ListView para permitir el desplazamiento
+                                controls=[
+                                    ft.Container(
+                                        content=ft.Column(
+                                            controls=[
+                                                ft.Text("Información Laboral"),
+                                                ft.Row(
+                                                    controls=[
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                controls=[
+                                                                    ft.TextField(label="Profesion", width=200),
+                                                                    ft.TextField(label="Puesto", width=200),
+                                                                    ft.TextField(label="Departamento", width=200),
+                                                                    ft.TextField(label="Proyecto", width=200),
+                                                                ]
+                                                            )
+                                                            
+                                                        ),
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                controls=[
+                                                                    ft.Container(
+                                                                        content=fecha_inicio_button,
+                                                                        padding=ft.padding.only(top=3),
+                                                                    ),
+                                                                    ft.Container(
+                                                                        content=fecha_final_button,
+                                                                        padding=ft.padding.only(top=3),
+                                                                    ),
+                                                                    ft.TextField(label="Salario inicial", width=200),
+                                                                    ft.TextField(label="Salario Actual", width=200),
+                                                                ]
+                                                            )
+                                                            
+                                                        ),
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                controls=[
+                                                                    ft.TextField(label="Bonificacion", width=200),
+                                                                    ft.TextField(label="Otros bonos", width=200),
+                                                                    ft.TextField(label="Igss", width=200),
+                                                                    ft.TextField(label="Prestaciones", width=200)
+                                                                ]
+                                                            )
+                                                            
+                                                        )
+                                                    ],
+                                                    expand=True
+                                                ),
+
+                                            ]
+
+                                        )
+                                    ),
+                                    ft.Container(
+                                        content=ft.Column(
+                                            controls=[
+                                                ft.Text("Contacto de Emergencia"),
+                                                ft.Row(
+                                                    controls=[
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                controls=[
+                                                                    ft.TextField(label="Nombre", width=200),
+                                                                    ft.TextField(label="No. Telefono", width=200),
+                                                                    ft.TextField(label="Nombre", width=200),
+                                                                    ft.TextField(label="No. Telefono", width=200)
+                                                                ]
+                                                            )
+                                                            
+                                                        )
+                                                    ],
+                                                    expand=True
+                                                ),
+
+                                            ]
+
+                                        )
+                                    ),
+                                    ft.Container(
+                                        content=ft.Column(
+                                            controls=[
+                                                ft.Text("Información Adicional"),
+                                                ft.Row(
+                                                    controls=[
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                controls=[
+                                                                    ft.TextField(label="Nacionalidad", width=200),
+                                                                    ft.TextField(label="Departamento", width=200),
+                                                                    ft.TextField(label="Municipio", width=200),
+                                                                    ft.TextField(label="Direccion", width=200),
+                                                                ]
+                                                            )
+                                                            
+                                                        ),
+                                                        
+                                                    ],
+                                                    expand=True
+                                                ),
+
+                                            ]
+
+                                        )
+                                    )
+                                ],
+                                expand=True,  # Permite que el ListView ocupe todo el espacio
+                            ),
+                        )
+                    ]
+                ),
+
+                padding=ft.padding.all(10),
+                width=1050,
+                height=600,
             ),
             actions=[
-                ft.TextButton("Agregar", on_click=lambda e: agregar_empleado(dialog)),
+                ft.TextButton("Agregar", on_click=lambda e: agregar_empleado(dialog, genero_dropdown)),
                 ft.TextButton("Cancelar", on_click=lambda e: cerrar_dialogo(dialog)),
             ],
         )
@@ -183,9 +528,14 @@ def home_view(page: ft.Page):
         dialog.open = True
         page.update()
 
+
+
+
+
     def actualizar_tarjetas():
         # Actualizar las tarjetas de perfil
         profile_cards.clear()
+        empleados = db.get_empleados()
         profile_cards.extend(crear_profile_card(empleado) for empleado in empleados)
         grid_view.controls = profile_cards
         page.update()
