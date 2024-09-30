@@ -20,26 +20,17 @@ CREATE TABLE personal_data (
 );
 
 -- Table for complementary data
-CREATE TABLE complementary_data (
+CREATE TABLE resident_data (
     id INT PRIMARY KEY AUTO_INCREMENT,
     codigo INT,
     nationality VARCHAR(50),
     department VARCHAR(50),
     municipio VARCHAR(50),
-    address VARCHAR(255)
+    direccion VARCHAR(255)
     FOREIGN KEY (codigo) REFERENCES personal_data(codigo)
 );
 
--- Table for family data
-CREATE TABLE family_data (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    codigo INT,
-    sos_name1 VARCHAR(50),
-    sos_contact1 VARCHAR(15),
-    sos_name2 VARCHAR(50),
-    sos_contact2 VARCHAR(15),
-    FOREIGN KEY (codigo) REFERENCES personal_data(codigo)
-);
+
 
 -- Table for employee photos
 CREATE TABLE employee_photos (
@@ -61,9 +52,31 @@ CREATE TABLE work_data (
     salary DECIMAL(10, 2),
     bonus DECIMAL(10, 2),
     other_bonus DECIMAL(10, 2),
-    start_date DATE,
+    fecha_inicio DATE,
     end_date DATE,
     igss VARCHAR(50),
     benefits TEXT,
+    FOREIGN KEY (codigo) REFERENCES personal_data(codigo)
+);
+
+-- Table for family data
+CREATE TABLE emergency_data (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    codigo INT,
+    sos_name1 VARCHAR(50),
+    sos_contact1 VARCHAR(15),
+    sos_name2 VARCHAR(50),
+    sos_contact2 VARCHAR(15),
+    FOREIGN KEY (codigo) REFERENCES personal_data(codigo)
+);
+
+-- Table for complementary data
+CREATE TABLE complementary_data (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    codigo INT,
+    illness VARCHAR(50),
+    medicine VARCHAR(50),
+    allergic VARCHAR(50),
+    blood_type VARCHAR(10),
     FOREIGN KEY (codigo) REFERENCES personal_data(codigo)
 );
