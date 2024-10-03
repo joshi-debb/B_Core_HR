@@ -6,7 +6,7 @@ USE Binarq_RRHH;
 -- Table for personal data
 CREATE TABLE personal_data (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    codigo INT,
+    codigo INT UNIQUE NOT NULL,
     firstName VARCHAR(50),
     lastName VARCHAR(50),
     dpi VARCHAR(20),
@@ -21,12 +21,12 @@ CREATE TABLE personal_data (
 
 -- Table for complementary data
 CREATE TABLE resident_data (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_rd INT PRIMARY KEY AUTO_INCREMENT,
     codigo INT,
     nationality VARCHAR(50),
     department VARCHAR(50),
     municipio VARCHAR(50),
-    direccion VARCHAR(255)
+    direccion VARCHAR(255),
     FOREIGN KEY (codigo) REFERENCES personal_data(codigo)
 );
 
@@ -56,6 +56,7 @@ CREATE TABLE work_data (
     end_date DATE,
     igss VARCHAR(50),
     benefits TEXT,
+    active_status ENUM('active', 'inactive'),
     FOREIGN KEY (codigo) REFERENCES personal_data(codigo)
 );
 
@@ -78,5 +79,15 @@ CREATE TABLE complementary_data (
     medicine VARCHAR(50),
     allergic VARCHAR(50),
     blood_type VARCHAR(10),
+    FOREIGN KEY (codigo) REFERENCES personal_data(codigo)
+);
+
+
+-- Table for despidos y renuncias
+CREATE TABLE terminations_resignations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    codigo INT,
+    date_leave DATE,
+    reason VARCHAR(255),
     FOREIGN KEY (codigo) REFERENCES personal_data(codigo)
 );

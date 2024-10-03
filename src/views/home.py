@@ -68,7 +68,7 @@ def home_view(page: ft.Page):
             bgcolor=ft.colors.BLUE,  # Cambiar el color de fondo del botón
             shape=ft.RoundedRectangleBorder(radius=8),  # Bordes redondeados (opcional)
         ),
-        on_click=lambda e: print("Botón de editar presionado")  # Acción al hacer clic
+        on_click=lambda e: print('Botón de editar presionado')  # Acción al hacer clic
     )
 
     delete_button = ft.ElevatedButton(
@@ -82,7 +82,7 @@ def home_view(page: ft.Page):
             bgcolor=ft.colors.RED,  # Cambiar el color de fondo del botón
             shape=ft.RoundedRectangleBorder(radius=8),  # Bordes redondeados (opcional)
         ),
-        on_click=lambda e: print("Botón de editar presionado")  # Acción al hacer clic
+        on_click=lambda e: print('Botón de editar presionado')  # Acción al hacer clic
     )
 
     # Lista simulada de empleados
@@ -102,7 +102,7 @@ def home_view(page: ft.Page):
                     ),
                     ft.Container(
                         content=ft.Text(
-                            f'{empleado["firstName"]}',
+                            f'{empleado['firstName']}',
                             color='#000000',
                             size=14,
                             weight=ft.FontWeight.W_900,
@@ -111,7 +111,7 @@ def home_view(page: ft.Page):
                     ),
                     ft.Container(
                         content=ft.Text(
-                            f'{empleado["lastName"]}',
+                            f'{empleado['lastName']}',
                             color='#000000',
                             size=14,
                             weight=ft.FontWeight.W_900,
@@ -132,7 +132,7 @@ def home_view(page: ft.Page):
             width=200,
             height=400,
             bgcolor='#85FFFFFF',
-            border=ft.border.all(1, "#000000"),
+            border=ft.border.all(1, '#000000'),
             border_radius=10,
             padding=ft.padding.all(10)
         )
@@ -160,7 +160,7 @@ def home_view(page: ft.Page):
                         ft.Container(
                             content=image,
                             left=10,
-                            border=ft.border.all(2, "#000000"),
+                            border=ft.border.all(2, '#000000'),
                             border_radius=8
                         ),
                         ft.Container(
@@ -177,113 +177,217 @@ def home_view(page: ft.Page):
         bgcolor='#85FFFFFF'
     )
 
-    # Función para cerrar el diálogo
-    def cerrar_dialogo(dialog):
-        preview_image.src = './images/default_p.png' 
-        dialog.open = False
-        page.update()
-
-    # Función para agregar un empleado
-    def agregar_empleado(dialog, genero_dropdown):
-        # Obtener los valores de los campos y del dropdown de género
-        nombre = dialog.content.controls[0].value
-        apellido = dialog.content.controls[1].value
-        dpi = dialog.content.controls[2].value
-        nit = dialog.content.controls[3].value
-        telefono = dialog.content.controls[4].value
-        correo = dialog.content.controls[5].value
-        edad = int(dialog.content.controls[6].value)
-        genero = genero_dropdown.value
-
-        print(nombre, apellido, dpi, nit, telefono, correo, edad, genero)
-
-        # print(nombre, apellido, dpi, nit, telefono, correo, edad, genero)
-
-        # Insertar los datos en la base de datos
-        # db.insert_personal_data(nombre, apellido, dpi, nit, telefono, correo, edad, genero)
-
-        actualizar_tarjetas()  # Actualizar las tarjetas después de agregar
-        preview_image.src = './images/default_p.png'
-        dialog.open = False
-        page.update()
+    
 
     def mostrar_dialogo_agregar():
-        # Crear el dropdown para el género
+
+        codigo_field = ft.Ref[ft.TextField]()
+        nombres_field = ft.Ref[ft.TextField]()
+        apellidos_field = ft.Ref[ft.TextField]()
+        doc_field = ft.Ref[ft.TextField]()
+
+        nit_field = ft.Ref[ft.TextField]()
+        telefono_field = ft.Ref[ft.TextField]()
+        correo_field = ft.Ref[ft.TextField]()
+
         genero_dropdown = ft.Dropdown(
-            label="Género", 
+            label='Género', 
             options=[
-                ft.dropdown.Option("male", "Masculino"),
-                ft.dropdown.Option("female", "Femenino"),
-                ft.dropdown.Option("other", "Otro"),
+                ft.dropdown.Option('male', 'Masculino'),
+                ft.dropdown.Option('female', 'Femenino'),
+                ft.dropdown.Option('other', 'Otro'),
             ],
             width=200,
-            value="male"  # Género predeterminado
+            value='male'
+        )
+
+        edad_field = ft.Ref[ft.TextField]()
+
+        datepicker = ft.DatePicker(
+            first_date=datetime.datetime(1960, 1, 1),
+            last_date=datetime.datetime(2030, 12, 31),
+            on_change=lambda e: update_birthday_label(e, page)
+        )
+
+        def open_date_picker(e):
+            if datepicker not in page.overlay:
+                page.overlay.append(datepicker)
+                page.update()
+            datepicker.pick_date()
+
+        birth_day_label = ft.Text('', height=5)
+
+        def update_birthday_label(e, page):
+            birth_day_label.value = datepicker.value.strftime('%d/%m/%Y')
+            page.update()
+
+        calendar_button = ft.ElevatedButton(
+            'Fecha Cumpleaños',
+            icon=ft.icons.CALENDAR_MONTH,
+            style=ft.ButtonStyle(
+                bgcolor=ft.colors.GREEN,
+                color=ft.colors.WHITE,
+                shape=ft.RoundedRectangleBorder(radius=8),
+            ),
+            width=200,
+            height=40,
+            on_click=open_date_picker
         )
         
         estado_civil_dropdown = ft.Dropdown(
-            label="Estado Civil", 
+            label='Estado Civil', 
             options=[
-                ft.dropdown.Option("single", "Soltero"),
-                ft.dropdown.Option("married", "Casado"),
-                ft.dropdown.Option("divorced", "Divorciado"),
-                ft.dropdown.Option("widowed", "Viudo"),
+                ft.dropdown.Option('single', 'Soltero'),
+                ft.dropdown.Option('married', 'Casado'),
+                ft.dropdown.Option('divorced', 'Divorciado'),
+                ft.dropdown.Option('widowed', 'Viudo'),
             ],
             width=200,
-            value="single"  # Género predeterminado
+            value='single'
         )
 
-        tipo_sangre_dropdown = ft.Dropdown(
-            label="Tipo de Sangre", 
-            options=[
-                ft.dropdown.Option("A+", "A+"),
-                ft.dropdown.Option("A-", "A-"),
-                ft.dropdown.Option("B+", "B+"),
-                ft.dropdown.Option("B-", "B-"),
-                ft.dropdown.Option("AB+", "AB+"),
-                ft.dropdown.Option("AB-", "AB-"),
-                ft.dropdown.Option("O+", "O+"),
-                ft.dropdown.Option("O-", "O-"),
-                ft.dropdown.Option("Desconocido", "Desconocido"),
-            ],
-            width=200,
-            value="Desconocido"  # Valor predeterminado
-        )
+        check_seguro = ft.Checkbox(label='Posee Seguro', value=False)
 
+        nacionalidad_field = ft.Ref[ft.TextField]()
 
-        # Dropdown de departamentos
         departamento_dropdown = ft.Dropdown(
-            label="Departamento", 
+            label='Departamento', 
             options=[
-                ft.dropdown.Option("alta_verapaz", "Alta Verapaz"),
-                ft.dropdown.Option("baja_verapaz", "Baja Verapaz"),
-                ft.dropdown.Option("chimaltenango", "Chimaltenango"),
-                ft.dropdown.Option("chuapas", "Chiapas"),
-                ft.dropdown.Option("coban", "Cobán"),
-                ft.dropdown.Option("escolastico", "Escuintla"),
-                ft.dropdown.Option("guatemala", "Guatemala"),
-                ft.dropdown.Option("huehuetenango", "Huehuetenango"),
-                ft.dropdown.Option("izabal", "Izabal"),
-                ft.dropdown.Option("jalapa", "Jalapa"),
-                ft.dropdown.Option("jutiapa", "Jutiapa"),
-                ft.dropdown.Option("quiche", "Quiché"),
-                ft.dropdown.Option("quetzaltenango", "Quetzaltenango"),
-                ft.dropdown.Option("san_marcos", "San Marcos"),
-                ft.dropdown.Option("santa_rosa", "Santa Rosa"),
-                ft.dropdown.Option("solala", "Solalá"),
-                ft.dropdown.Option("totonicapan", "Totonicapán"),
-                ft.dropdown.Option("verapaz", "Verapaz"),
-                ft.dropdown.Option("zacapa", "Zacapa"),
+                ft.dropdown.Option('alta_verapaz', 'Alta Verapaz'),
+                ft.dropdown.Option('baja_verapaz', 'Baja Verapaz'),
+                ft.dropdown.Option('chimaltenango', 'Chimaltenango'),
+                ft.dropdown.Option('chuapas', 'Chiapas'),
+                ft.dropdown.Option('coban', 'Cobán'),
+                ft.dropdown.Option('escolastico', 'Escuintla'),
+                ft.dropdown.Option('guatemala', 'Guatemala'),
+                ft.dropdown.Option('huehuetenango', 'Huehuetenango'),
+                ft.dropdown.Option('izabal', 'Izabal'),
+                ft.dropdown.Option('jalapa', 'Jalapa'),
+                ft.dropdown.Option('jutiapa', 'Jutiapa'),
+                ft.dropdown.Option('quiche', 'Quiché'),
+                ft.dropdown.Option('quetzaltenango', 'Quetzaltenango'),
+                ft.dropdown.Option('san_marcos', 'San Marcos'),
+                ft.dropdown.Option('santa_rosa', 'Santa Rosa'),
+                ft.dropdown.Option('solala', 'Solalá'),
+                ft.dropdown.Option('totonicapan', 'Totonicapán'),
+                ft.dropdown.Option('verapaz', 'Verapaz'),
+                ft.dropdown.Option('zacapa', 'Zacapa'),
             ],
             width=200,
-            value="guatemala",  # Departamento predeterminado
+            value='guatemala',
         )
         
-        # Dropdown de municipios
         municipio_dropdown = ft.Dropdown(
-            label="Municipio", 
+            label='Municipio', 
             options=[],
             width=200
         )
+
+        direccion_field = ft.Ref[ft.TextField]()
+
+        profesion_field = ft.Ref[ft.TextField]()
+        puesto_field = ft.Ref[ft.TextField]()
+        departamento_field = ft.Ref[ft.TextField]()
+        proyecto_field = ft.Ref[ft.TextField]()
+
+
+        datepicker2 = ft.DatePicker(
+            first_date=datetime.datetime(1960, 1, 1),
+            last_date=datetime.datetime(2030, 12, 31),
+            on_change=lambda e: update_init_day_label(e, page)
+        )
+
+        def open_date_picker2(e):
+            if datepicker2 not in page.overlay:
+                page.overlay.append(datepicker2)
+                page.update()
+            datepicker2.pick_date()
+
+        init_day_label = ft.Text('', height=5)
+
+        def update_init_day_label(e, page):
+            init_day_label.value = datepicker2.value.strftime('%d/%m/%Y')
+            page.update()
+
+        fecha_inicio_button = ft.ElevatedButton(
+            'Fecha Inicia',
+            icon=ft.icons.CALENDAR_MONTH,
+            style=ft.ButtonStyle(
+                bgcolor=ft.colors.GREEN,
+                color=ft.colors.WHITE,
+                shape=ft.RoundedRectangleBorder(radius=8),
+            ),
+            width=200,
+            height=40,
+            on_click=open_date_picker2
+        )
+
+        datepicker3 = ft.DatePicker(
+            first_date=datetime.datetime(1960, 1, 1),
+            last_date=datetime.datetime(2030, 12, 31),
+            on_change=lambda e: update_end_day_label(e, page)
+        )
+
+        def open_date_picker3(e):
+            if datepicker3 not in page.overlay:
+                page.overlay.append(datepicker3)
+                page.update()
+            datepicker3.pick_date()
+
+        end_day_label = ft.Text('', height=5)
+
+        def update_end_day_label(e, page):
+            end_day_label.value = datepicker3.value.strftime('%d/%m/%Y')
+            page.update()
+
+        fecha_final_button = ft.ElevatedButton(
+            'Fecha Finaliza',
+            icon=ft.icons.CALENDAR_MONTH,
+            style=ft.ButtonStyle(
+                bgcolor=ft.colors.GREEN,
+                color=ft.colors.WHITE,
+                shape=ft.RoundedRectangleBorder(radius=8),
+            ),
+            width=200,
+            height=40,
+            on_click=open_date_picker3
+        )
+
+        salario_inicial_field = ft.Ref[ft.TextField]()
+        salario_actual_field = ft.Ref[ft.TextField]()
+
+        bonificacion_field = ft.Ref[ft.TextField]()
+        otros_bonos_field = ft.Ref[ft.TextField]()
+        igss_field = ft.Ref[ft.TextField]()
+        check_prestaciones = ft.Checkbox(label='Prestaciones Laborales', value=False)
+
+        enfermedad_field = ft.Ref[ft.TextField]()
+        medicamento_field = ft.Ref[ft.TextField]()
+        alergias_field = ft.Ref[ft.TextField]()
+
+        tipo_sangre_dropdown = ft.Dropdown(
+            label='Tipo de Sangre', 
+            options=[
+                ft.dropdown.Option('A+', 'A+'),
+                ft.dropdown.Option('A-', 'A-'),
+                ft.dropdown.Option('B+', 'B+'),
+                ft.dropdown.Option('B-', 'B-'),
+                ft.dropdown.Option('AB+', 'AB+'),
+                ft.dropdown.Option('AB-', 'AB-'),
+                ft.dropdown.Option('O+', 'O+'),
+                ft.dropdown.Option('O-', 'O-'),
+                ft.dropdown.Option('Desconocido', 'Desconocido'),
+            ],
+            width=200,
+            value='Desconocido'  # Valor predeterminado
+        )
+
+        nombre_emergencia_field = ft.Ref[ft.TextField]()
+        telefono_emergencia_field = ft.Ref[ft.TextField]()
+        nombre_emergencia2_field = ft.Ref[ft.TextField]()
+        telefono_emergencia2_field = ft.Ref[ft.TextField]()
+
+        
 
         # Función para actualizar municipios según el departamento seleccionado
         def on_departamento_change(e):
@@ -297,75 +401,9 @@ def home_view(page: ft.Page):
         # Evento de cambio en el dropdown de departamento
         departamento_dropdown.on_change = on_departamento_change
 
-        # Agrega los dropdowns a la página
-        # page.add(departamento_dropdown, municipio_dropdown)
-
-        # DatePicker configuración
-        datepicker = ft.DatePicker(
-            first_date=datetime.datetime(1960, 1, 1),
-            last_date=datetime.datetime(2030, 12, 31),
-            on_change=lambda e: update_birthday_label(e, page)
-        )
-
-        selected_date_label = ft.Text("Cumpleaños no seleccionado", height=5)
-
-        def open_date_picker(e):
-            # Asegurarse de que el DatePicker está en la página antes de abrirlo
-            if datepicker not in page.overlay:
-                page.overlay.append(datepicker)
-                page.update()  # Asegurarse de que el control está actualizado
-            datepicker.pick_date()  # Abre el DatePicker
-
-        def update_birthday_label(e, page):
-            print(datepicker.value.strftime("%d/%m/%Y"))
-            selected_date_label.value = datepicker.value.strftime("%d/%m/%Y")
-            page.update()
-
-        calendar_button = ft.ElevatedButton(
-            "Fecha Cumpleaños",
-            icon=ft.icons.CALENDAR_MONTH,  # Cambia el ícono según tu preferencia
-            style=ft.ButtonStyle(
-                bgcolor=ft.colors.GREEN,  # Cambia el color de fondo del botón
-                color=ft.colors.WHITE,     # Cambia el color del texto
-                shape=ft.RoundedRectangleBorder(radius=8),  # Bordes redondeados
-            ),
-            width=200,  # Ancho del botón
-            height=40,  # Alto del botón
-            on_click=open_date_picker
-        )
-
-        fecha_inicio_button = ft.ElevatedButton(
-            "Fecha Inicia",
-            icon=ft.icons.CALENDAR_MONTH,  # Cambia el ícono según tu preferencia
-            style=ft.ButtonStyle(
-                bgcolor=ft.colors.GREEN,  # Cambia el color de fondo del botón
-                color=ft.colors.WHITE,     # Cambia el color del texto
-                shape=ft.RoundedRectangleBorder(radius=8),  # Bordes redondeados
-            ),
-            width=200,  # Ancho del botón
-            height=40,  # Alto del botón
-            on_click=open_date_picker
-        )
-
-        fecha_final_button = ft.ElevatedButton(
-            "Fecha Finaliza",
-            icon=ft.icons.CALENDAR_MONTH,  # Cambia el ícono según tu preferencia
-            style=ft.ButtonStyle(
-                bgcolor=ft.colors.GREEN,  # Cambia el color de fondo del botón
-                color=ft.colors.WHITE,     # Cambia el color del texto
-                shape=ft.RoundedRectangleBorder(radius=8),  # Bordes redondeados
-            ),
-            width=200,  # Ancho del botón
-            height=40,  # Alto del botón
-            on_click=open_date_picker
-        )
-
-        check_seguro = ft.Checkbox(label="Posee Seguro", value=False)
-        check_prestaciones = ft.Checkbox(label="Prestaciones Laborales", value=False)
-
         # Crear el diálogo con varias columnas
         dialog = ft.AlertDialog(
-            title=ft.Text("Agregar Empleado", weight=ft.FontWeight.W_900, selectable=True),
+            title=ft.Text('Agregar Empleado', weight=ft.FontWeight.W_900, selectable=True),
             content=ft.Container(
                 content=ft.Column(
                     controls=[
@@ -375,7 +413,7 @@ def home_view(page: ft.Page):
                                     ft.Container(
                                         content=ft.Column(
                                             controls=[
-                                                ft.Text("Información Personal", size=30, weight=ft.FontWeight.W_900, selectable=True),
+                                                ft.Text('Información Personal', size=30, weight=ft.FontWeight.W_900, selectable=True),
                                                 ft.Row(
                                                     controls=[
                                                         ft.Container(
@@ -384,8 +422,8 @@ def home_view(page: ft.Page):
                                                                     ft.Column(
                                                                         controls=[
                                                                             preview_image,
-                                                                            ft.Text("Selecciona una foto:"),
-                                                                            ft.ElevatedButton("Cargar Foto", on_click=lambda e: file_picker.pick_files()),
+                                                                            ft.Text('Selecciona una foto:'),
+                                                                            ft.ElevatedButton('Cargar Foto', on_click=lambda e: file_picker.pick_files()),
                                                                             
                                                                         ],
                                                                         
@@ -402,10 +440,10 @@ def home_view(page: ft.Page):
                                                         ft.Container(
                                                             content=ft.Column(
                                                                 controls=[
-                                                                    ft.TextField(label="Codigo", width=200),
-                                                                    ft.TextField(label="Nombres", width=200),
-                                                                    ft.TextField(label="Apellidos", width=200),
-                                                                    ft.TextField(label="DPI/Pasaporte", width=200),
+                                                                    ft.TextField(label='Codigo', width=200, ref=codigo_field),
+                                                                    ft.TextField(label='Nombres', width=200, ref=nombres_field),
+                                                                    ft.TextField(label='Apellidos', width=200, ref=apellidos_field),
+                                                                    ft.TextField(label='DPI/Pasaporte', width=200, ref=doc_field),
                                                                     
                                                                 ]
                                                             )
@@ -414,9 +452,9 @@ def home_view(page: ft.Page):
                                                         ft.Container(
                                                             content=ft.Column(
                                                                 controls=[
-                                                                    ft.TextField(label="NIT", width=200),
-                                                                    ft.TextField(label="Teléfono", width=200),
-                                                                    ft.TextField(label="Correo", width=200),
+                                                                    ft.TextField(label='NIT', width=200, ref=nit_field),
+                                                                    ft.TextField(label='Teléfono', width=200, ref=telefono_field),
+                                                                    ft.TextField(label='Correo', width=200, ref=correo_field),
                                                                     genero_dropdown,
                                                                     
                                                                     
@@ -427,7 +465,7 @@ def home_view(page: ft.Page):
                                                         ft.Container(
                                                             content=ft.Column(
                                                                 controls=[
-                                                                    ft.TextField(label="Edad", width=200),
+                                                                    ft.TextField(label='Edad', width=200, ref=edad_field),
                                                                     ft.Container(
                                                                         content=calendar_button,
                                                                         padding=ft.padding.only(top=3),
@@ -436,7 +474,11 @@ def home_view(page: ft.Page):
                                                                         content=estado_civil_dropdown,
                                                                         padding=ft.padding.only(top=5),
                                                                     ),
-                                                                    ft.TextField(label="Asegurado ?", width=200),
+                                                                    ft.Container(
+                                                                        content=check_seguro,
+                                                                        padding=ft.padding.only(top=10, bottom=5),
+                                                                    ),
+                                                                    # ft.TextField(label='Asegurado ?', width=200),
                                                                     
                                                                 ],
                                                                 
@@ -456,16 +498,16 @@ def home_view(page: ft.Page):
                                     ft.Container(
                                         content=ft.Column(
                                             controls=[
-                                                ft.Text("Residencia", size=30, weight=ft.FontWeight.W_900, selectable=True),
+                                                ft.Text('Residencia', size=30, weight=ft.FontWeight.W_900, selectable=True),
                                                 ft.Row(
                                                     controls=[
                                                         ft.Container(
                                                             content=ft.Column(
                                                                 controls=[
-                                                                    ft.TextField(label="Nacionalidad", width=200),
+                                                                    ft.TextField(label='Nacionalidad', width=200, ref=nacionalidad_field),
                                                                     departamento_dropdown,
                                                                     municipio_dropdown,
-                                                                    ft.TextField(label="Direccion", width=200),
+                                                                    ft.TextField(label='Direccion', width=200, ref=direccion_field),
                                                                 ]
                                                             )
                                                             
@@ -490,16 +532,16 @@ def home_view(page: ft.Page):
                                     ft.Container(
                                         content=ft.Column(
                                             controls=[
-                                                ft.Text("Información Laboral", size=30, weight=ft.FontWeight.W_900, selectable=True),
+                                                ft.Text('Información Laboral', size=30, weight=ft.FontWeight.W_900, selectable=True),
                                                 ft.Row(
                                                     controls=[
                                                         ft.Container(
                                                             content=ft.Column(
                                                                 controls=[
-                                                                    ft.TextField(label="Profesion", width=200),
-                                                                    ft.TextField(label="Puesto", width=200),
-                                                                    ft.TextField(label="Departamento", width=200),
-                                                                    ft.TextField(label="Proyecto", width=200),
+                                                                    ft.TextField(label='Profesion', width=200, ref=profesion_field, value='N/E'),
+                                                                    ft.TextField(label='Puesto', width=200, ref=puesto_field),
+                                                                    ft.TextField(label='Departamento', width=200, ref=departamento_field),
+                                                                    ft.TextField(label='Proyecto', width=200, ref=proyecto_field),
                                                                 ]
                                                             )
                                                             
@@ -515,8 +557,8 @@ def home_view(page: ft.Page):
                                                                         content=fecha_final_button,
                                                                         padding=ft.padding.only(top=3, bottom=6),
                                                                     ),
-                                                                    ft.TextField(label="Salario inicial", width=200),
-                                                                    ft.TextField(label="Salario Actual", width=200),
+                                                                    ft.TextField(label='Salario inicial', width=200, ref=salario_inicial_field),
+                                                                    ft.TextField(label='Salario Actual', width=200, ref=salario_actual_field),
                                                                 ]
                                                             )
                                                             
@@ -524,10 +566,15 @@ def home_view(page: ft.Page):
                                                         ft.Container(
                                                             content=ft.Column(
                                                                 controls=[
-                                                                    ft.TextField(label="Bonificacion", width=200),
-                                                                    ft.TextField(label="Otros bonos", width=200),
-                                                                    ft.TextField(label="Igss", width=200),
-                                                                    ft.TextField(label="Prestaciones", width=200)
+                                                                    ft.TextField(label='Bonificacion', width=200, ref=bonificacion_field),
+                                                                    ft.TextField(label='Otros bonos', width=200, ref=otros_bonos_field),
+                                                                    ft.TextField(label='Igss', width=200, ref=igss_field),
+                                                                    ft.Container(
+                                                                        content=check_prestaciones,
+                                                                        padding=ft.padding.only(top=9, bottom=5),
+                                                                    ),
+                                                                    
+                                                                    # ft.TextField(label='Prestaciones', width=200)
                                                                 ]
                                                             )
                                                             
@@ -543,16 +590,17 @@ def home_view(page: ft.Page):
                                     ft.Container(
                                         content=ft.Column(
                                             controls=[
-                                                ft.Text("Adicional", size=30, weight=ft.FontWeight.W_900, selectable=True),
+                                                ft.Text('Adicional', size=30, weight=ft.FontWeight.W_900, selectable=True),
                                                 ft.Row(
                                                     controls=[
                                                         ft.Container(
                                                             content=ft.Column(
                                                                 controls=[
-                                                                    ft.TextField(label="Enfermedad", width=200),
-                                                                    ft.TextField(label="Medicamento", width=200),
-                                                                    ft.TextField(label="Alergias", width=200),
-                                                                    ft.TextField(label="Tipo de Sangre", width=200),
+                                                                    ft.TextField(label='Enfermedad', width=200, ref=enfermedad_field),
+                                                                    ft.TextField(label='Medicamento', width=200, ref=medicamento_field),
+                                                                    ft.TextField(label='Alergias', width=200, ref=alergias_field),
+                                                                    tipo_sangre_dropdown,
+                                                                    # ft.TextField(label='Tipo de Sangre', width=200),
                                                                 ]
                                                             )
                                                             
@@ -569,16 +617,16 @@ def home_view(page: ft.Page):
                                     ft.Container(
                                         content=ft.Column(
                                             controls=[
-                                                ft.Text("Emergencia", size=30, weight=ft.FontWeight.W_900, selectable=True),
+                                                ft.Text('Emergencia', size=30, weight=ft.FontWeight.W_900, selectable=True),
                                                 ft.Row(
                                                     controls=[
                                                         ft.Container(
                                                             content=ft.Column(
                                                                 controls=[
-                                                                    ft.TextField(label="Nombre", width=200),
-                                                                    ft.TextField(label="No. Telefono", width=200),
-                                                                    ft.TextField(label="Nombre", width=200),
-                                                                    ft.TextField(label="No. Telefono", width=200)
+                                                                    ft.TextField(label='Nombre', width=200, ref=nombre_emergencia_field),
+                                                                    ft.TextField(label='No. Telefono', width=200, ref=telefono_emergencia_field),
+                                                                    ft.TextField(label='Nombre', width=200, ref=nombre_emergencia2_field),
+                                                                    ft.TextField(label='No. Telefono', width=200, ref=telefono_emergencia2_field),
                                                                 ]
                                                             )
                                                             
@@ -604,8 +652,8 @@ def home_view(page: ft.Page):
                 height=600,
             ),
             actions=[
-                ft.TextButton("Agregar", on_click=lambda e: agregar_empleado(dialog, genero_dropdown)),
-                ft.TextButton("Cancelar", on_click=lambda e: cerrar_dialogo(dialog)),
+                ft.TextButton('Agregar', on_click=lambda e: agregar_empleado(dialog)),
+                ft.TextButton('Cancelar', on_click=lambda e: cerrar_dialogo(dialog)),
             ],
         )
 
@@ -613,6 +661,71 @@ def home_view(page: ft.Page):
         page.dialog = dialog
         dialog.open = True
         page.update()
+
+        # Función para cerrar el diálogo
+        def cerrar_dialogo(dialog):
+            preview_image.src = './images/default_p.png' 
+            dialog.open = False
+            page.update()
+
+        # Función para agregar un empleado
+        def agregar_empleado(dialog):
+            codigo = codigo_field.current.value
+            nombre = nombres_field.current.value
+            apellido = apellidos_field.current.value
+            documento = doc_field.current.value
+
+            nit = nit_field.current.value
+            telefono = telefono_field.current.value
+            correo = correo_field.current.value
+            genero = genero_dropdown.value
+
+            edad = edad_field.current.value
+            b_day = birth_day_label.value
+            estado_civil = estado_civil_dropdown.value
+            seguro = check_seguro.value
+
+            nacionalidad = nacionalidad_field.current.value
+            departamento = departamento_dropdown.value
+            municipio = municipio_dropdown.value
+            direccion = direccion_field.current.value
+
+            profesion = profesion_field.current.value
+            puesto = puesto_field.current.value
+            deptmet = departamento_field.current.value
+            proyecto = proyecto_field.current.value
+
+            fecha_inicia = init_day_label.value
+            fecha_finaliza = end_day_label.value
+            salario_inicial = salario_inicial_field.current.value
+            salario_actual = salario_actual_field.current.value
+
+            bonificacion = bonificacion_field.current.value
+            otros_bonos = otros_bonos_field.current.value
+            igss = igss_field.current.value
+            prestaciones = check_prestaciones.value
+
+            enfermedad = enfermedad_field.current.value
+            medicamento = medicamento_field.current.value
+            alergias = alergias_field.current.value
+            tipo_sangre = tipo_sangre_dropdown.value
+
+            nombre_emergencia = nombre_emergencia_field.current.value
+            telefono_emergencia = telefono_emergencia_field.current.value
+            nombre_emergencia2 = nombre_emergencia2_field.current.value
+            telefono_emergencia2 = telefono_emergencia2_field.current.value
+
+            print('Personal Data', codigo, nombre, apellido, documento, nit, telefono, correo, genero, edad, b_day, estado_civil, seguro)
+            print('Residencia', nacionalidad, departamento, municipio, direccion)
+            print('Laboral', profesion, puesto, deptmet, proyecto, fecha_inicia, fecha_finaliza, salario_inicial, salario_actual, bonificacion, otros_bonos, igss, prestaciones)
+            print('Adicional', enfermedad, medicamento, alergias, tipo_sangre)
+            print('Emergencia', nombre_emergencia, telefono_emergencia, nombre_emergencia2, telefono_emergencia2)
+
+
+            actualizar_tarjetas()  # Actualizar las tarjetas después de agregar
+            preview_image.src = './images/default_p.png'
+            dialog.open = False
+            page.update()
 
     def actualizar_tarjetas():
         # Actualizar las tarjetas de perfil
@@ -638,32 +751,32 @@ def home_view(page: ft.Page):
         selected_index=0,
         label_type=ft.NavigationRailLabelType.ALL,
         group_alignment=-0.9,
-        bgcolor="#50FFA500",
+        bgcolor='#50FFA500',
         destinations=[
             ft.NavigationRailDestination(
                 icon=ft.icons.RATE_REVIEW, 
                 selected_icon=ft.icons.RATE_REVIEW, 
-                label="Ver todos"
+                label='Ver todos'
             ),
             ft.NavigationRailDestination(
                 icon_content=ft.Icon(ft.icons.PERSON_ADD),
                 selected_icon_content=ft.Icon(ft.icons.PERSON_ADD),
-                label="Agregar",
+                label='Agregar',
             ),
             ft.NavigationRailDestination(
                 icon_content=ft.Icon(ft.icons.EDIT),
                 selected_icon_content=ft.Icon(ft.icons.EDIT),
-                label="Editar",
+                label='Editar',
             ),
             ft.NavigationRailDestination(
                 icon_content=ft.Icon(ft.icons.DELETE),
                 selected_icon_content=ft.Icon(ft.icons.DELETE),
-                label="Eliminar",
+                label='Eliminar',
             ),
             ft.NavigationRailDestination(
                 icon=ft.icons.SETTINGS_OUTLINED,
                 selected_icon_content=ft.Icon(ft.icons.SETTINGS),
-                label_content=ft.Text("Settings"),
+                label_content=ft.Text('Settings'),
             ),
         ],
         on_change=lambda e: handle_navigation_change(e),
